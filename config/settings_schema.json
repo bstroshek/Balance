@@ -1,0 +1,13 @@
+[
+    
+     {
+        "name": "Typography",
+        "settings": [
+            {
+                "type": "checkbox",
+                "id": "use_font",
+                "label": "Roboto"
+            }
+        ]
+    }
+]

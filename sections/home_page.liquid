@@ -1,0 +1,32 @@
+{% comment %}
+  *** Home page ***
+  See https://shopify.dev/docs/themes/architecture/templates/index-template
+{% endcomment %}
+
+<div class="my_section my_home py-40 flex flex-col items-center">
+  <!-- Home page section -->
+
+  {% for product in collections.all.products %}
+    <a href="{{ product.url }}" class="flex flex-col items-center space-x-4 hover:text-blue-600">
+      <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.title }}">
+      <span class="pt-2">{{ product.title }}</span>
+    </a>
+  {% endfor %}
+
+</div>
+
+
+{% schema %}
+{
+  "name": "t:sections.home_page.name",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "text",
+      "id": "my_title",
+      "label": "Home page title",
+      "default": "THIS IS MY HOME PAGE"
+    }
+  ]
+}
+{% endschema %}

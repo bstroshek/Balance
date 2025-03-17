@@ -1,0 +1,240 @@
+<!--product.liquid-->
+                
+
+<style>
+    @import url(https://db.onlinewebfonts.com/c/b9561c58f8199daedf9095bf03ae7917?family=Franklin+Gothic+ATF+Regular);
+    
+    .product-gallery {
+      position: relative;
+      overflow: hidden;
+    }
+    .product-gallery img {
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: opacity 0.3s ease-in-out;
+      object-fit: contain;
+    }
+    #product-main-image {
+      position: relative;
+      z-index: 10;
+    }
+    #product-secondary-image {
+      opacity: 0;
+      visibility: hidden;
+      z-index: 15;
+    }
+    #product-secondary-image.active {
+      opacity: 1;
+      display: block;
+    }
+    #product-gallery:hover #product-secondary-image {
+      opacity: 1;
+      visibility: visible;
+    }
+
+  .color-circle {
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+  }
+
+  .color-circle.hovered,
+  .color-circle.selected {
+      border: 1px solid white;
+      box-shadow: 0 0 0 1px #0A4874;
+  }
+  .color-circle.selected {
+    transform: scale(1.1); 
+  }
+  </style>
+  
+  {% assign settings = section.settings %} 
+  
+  <div class="product-hero w-full py-20">
+    <div class="product-hero__main max-w-7xl mx-auto px-5 sm:grid sm:grid-cols-2 md:px-10">
+      <div class="product-hero__gallery mb-3">
+        <div class="product-gallery inline-block mb-3.5 p-5 border border-[#E8E8E8] rounded-[10px] w-full relative">
+            {% if product.compare_at_price %}
+                <div class="product-hero__bage absolute top-5 left-5 z-20 text-red-500 font-medium text-[15px] py-[6px] px-[12px] rounded-[25px] border border-red-500 font-[Franklin_Gothic,sans-serif] leading-[15px]">On Sale!</div>
+            {% endif %}
+  
+            {% assign initial_variant = product.selected_or_first_available_variant %}
+          
+            <!-- Main Image -->
+            <img id="product-main-image" class="w-full" src="{{ initial_variant.image | img_url: '1024x1024' }}" alt="{{ initial_variant.title }}">
+  
+            <!-- Secondary Image -->
+            {% if initial_variant.metafields.custom.secondary_image %}
+             <img id="product-secondary-image" src="{{ initial_variant.metafields.custom.secondary_image | img_url: '1024x1024' }}" alt="{{ initial_variant.title }} - Secondary">
+            {% else %}
+              <img id="product-secondary-image" src="" alt="{{ initial_variant.title }} - Secondary">
+            {% endif %}
+  
+          </div>
+
+        {% if settings.show_variants and product.variants.size > 1 %}
+        <div class="product-hero__variant-holder">
+          <ul class="list-none flex flex-row">
+            {% for variant in product.variants %}
+                {% for option_name in product.options %}
+                    {% if option_name == "Color" %}
+                        {% assign color_index = forloop.index0 %}
+                        <li>
+                            <span class="color-circle block w-5 h-5 rounded-full mr-2" 
+                                  style="background-color: {{ variant.metafields.custom.color_hex }};"
+                                  data-main-image="{{ variant.image | img_url: '1024x1024' }}"
+                                  {% if variant.metafields.custom.secondary_image %}
+                                  data-secondary-image="{{ variant.metafields.custom.secondary_image | img_url: '1024x1024' }}"
+                                  {% endif %}
+                            ></span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}       
+          </ul>
+        </div>
+        {% endif %}
+  
+      </div>
+      <div class="product-hero__details sm:px-5">
+        <div class="product-hero__details__holder text-left text-[#111] text-sm font-normal leading-[1.6em]">
+          {% if settings.show_vendor %}
+            <p class="product-hero__vendor sm:text-base">{{ product.vendor }}</p>
+          {% endif %}
+          <h1 class="product-hero__title text-[#0A4874] font-medium sm:text-2xl">{{ product.title }}</h1>
+          {% if settings.show_description and product.description != blank %}
+            <div class="product-hero__description sm:text-base py-3">{{ product.description | truncatewords: 50, "..."}}</div>
+          {% endif %}
+          <div class="product-hero__price-holder sm:text-base">
+            {% if product.compare_at_price %}
+                <span class="product-hero__price-old line-through mr-2">{{ product.compare_at_price | money }}</span>
+            {% endif %}
+            <span class="product-hero__price-new text-[#FF0000]">{{ product.price | money }}</span>
+          </div>
+          {% if settings.custom_text != blank %}
+            <div class="custom-text sm:text-base py-3">
+              {{ settings.custom_text | richtext }}
+            </div>
+          {% endif %}
+
+          {% for block in section.blocks %}
+            {% if block.type == "liquid_block" and block.settings.custom_liquid != blank %}
+              <div class="product-hero__liquid-container">
+                <div class="product-hero__liquid-block">
+                  {{ block.settings.custom_liquid }}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(function() {
+      function setVariantImages(mainImage, secondaryImage) {
+        if ($("#product-main-image").length) {
+          $("#product-main-image").attr("src", mainImage || ""); 
+        }
+
+        if ($("#product-secondary-image").length) {
+          $("#product-secondary-image").attr("src", secondaryImage || "").removeClass("active");
+        }
+      }
+
+      // Select the first color circle on page load
+      let firstCircle = $(".color-circle").first();
+      if (firstCircle.length) {
+        firstCircle.addClass("selected"); 
+        setVariantImages(firstCircle.attr("data-main-image"), firstCircle.attr("data-secondary-image"));
+      }
+
+      // Handle variant change when clicking color circles
+      $(".color-circle").click(function () {
+        let newMainImage = $(this).attr("data-main-image") || "";
+        let newSecondaryImage = $(this).attr("data-secondary-image") || "";
+
+        setVariantImages(newMainImage, newSecondaryImage);
+
+        // Remove 'selected' class from all circles and add to clicked one
+        $(".color-circle").removeClass("selected");
+        $(this).addClass("selected");
+      });
+
+      // Hover effect for secondary image swap
+      $(".product-gallery").hover(
+        function () {
+            if ($("#product-secondary-image").attr("src")) {
+                $("#product-secondary-image").css({ "opacity": "1", "visibility": "visible" });
+            }
+        },
+        function () {
+            $("#product-secondary-image").css({ "opacity": "0", "visibility": "hidden" });
+        }
+    );
+
+      // Hover effect for color circles
+      $(".color-circle").on("mouseenter", function() {
+        $(this).addClass("hovered");
+      });
+
+      $(".color-circle").on("mouseleave", function() {
+        $(this).removeClass("hovered");
+      });
+    });
+  </script>
+  
+  
+  
+ {% schema %}
+  {
+   "name": "Product Hero",
+   "settings": [
+     {
+       "type": "checkbox",
+       "id": "show_vendor",
+       "label": "Show Vendor",
+       "default": true
+     },
+     {
+       "type": "checkbox",
+       "id": "show_variants",
+       "label": "Show Variants",
+       "default": true
+     },
+     {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show Description",
+      "default": false
+    },
+    {
+      "type": "richtext",
+      "id": "custom_text",
+      "label": "Custom Text"
+    }
+   ],
+   "blocks": [
+    {
+      "type": "liquid_block",
+      "name": "Liquid Code Block",
+      "settings": [
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "Custom Liquid Code"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3
+ }
+ 
+{% endschema %}

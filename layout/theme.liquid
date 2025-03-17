@@ -1,0 +1,46 @@
+{% comment %}
+  *** Base page to render all theme contents ***
+  See https://shopify.dev/docs/themes/architecture
+{% endcomment %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    {{ content_for_header }}
+
+    <!-- global CSS -->
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+
+    <!-- My CSS -->
+    {{ 'application.css' | asset_url | stylesheet_tag }}
+
+    <!-- global JavaScript -->
+    {{ 'theme.js' | asset_url | script_tag }}
+
+    <!-- THeme font CSS (if selected only) -->
+    {% comment %}
+      See https://shopify.dev/docs/themes/architecture/settings/fonts
+    {% endcomment %}
+    {% if settings.use_font == true %}
+      {{ 'theme_font.css' | asset_url | stylesheet_tag }}
+    {% endif %}
+  </head>
+
+  <body>
+    <div class="my_font w-full">
+      <!-- My own header group -->
+      {% sections 'header_group' %}
+
+      <!-- Shopify generated template (body) contents -->
+      {% comment %}
+        See https://shopify.dev/docs/themes/architecture/layouts#content_for_layout
+      {% endcomment %}
+      {{ content_for_layout }}
+
+      <!-- My own footer group -->
+    
+    </div>
+  </body>
+</html>
